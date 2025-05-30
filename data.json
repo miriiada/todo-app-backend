@@ -1,0 +1,17 @@
+[
+    {
+        "id": 1,
+        "text": "Learn Flask-React stack",
+        "done": false
+    },
+    {
+        "id": 2,
+        "text": "Ship first portfolio project",
+        "done": false
+    },
+    {
+        "id": 3,
+        "text": "test",
+        "done": true
+    }
+]
