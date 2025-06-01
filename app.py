@@ -17,6 +17,9 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+with app.app_context():
+    db.create_all()
+
 class Task(db.Model):
     id   = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(120), nullable=False)
@@ -54,7 +57,4 @@ def toggle_done(task_id):
     return jsonify(task.as_dict())
 
 if __name__ == "__main__":
-    if app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite"):
-        with app.app_context():
-            db.create_all()
     app.run(debug=True)
