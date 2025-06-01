@@ -7,7 +7,11 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///local.db")
+raw_db_url = os.getenv("DATABASE_URL", "sqlite:///local.db")
+if raw_db_url.startswith("postgres://"):
+    raw_db_url = raw_db_url.replace("postgres://", "postgresql://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = raw_db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
@@ -26,21 +30,19 @@ class Task(db.Model):
 
 @app.get("/api/tasks")
 def get_tasks():
-    tasks = Task.query.all()
-    return jsonify([t.as_dict() for t in tasks])
+    return jsonify([t.as_dict() for t in Task.query.all()])
 
 @app.post("/api/tasks")
 def add_task():
-    data = request.json
-    task = Task(text=data["text"])
+    task = Task(text=request.json["text"])
     db.session.add(task)
     db.session.commit()
     return jsonify(task.as_dict()), 201
 
 @app.delete("/api/tasks/<int:task_id>")
 def delete_task(task_id):
-    t = Task.query.get_or_404(task_id)
-    db.session.delete(t)
+    task = Task.query.get_or_404(task_id)
+    db.session.delete(task)
     db.session.commit()
     return jsonify({"status": "ok"})
 
@@ -51,6 +53,8 @@ def toggle_done(task_id):
     db.session.commit()
     return jsonify(task.as_dict())
 
-
 if __name__ == "__main__":
+    if app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite"):
+        with app.app_context():
+            db.create_all()
     app.run(debug=True)
