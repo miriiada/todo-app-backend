@@ -56,5 +56,25 @@ def toggle_done(task_id):
     db.session.commit()
     return jsonify(task.as_dict())
 
+@app.put("/api/tasks/<int:task_id>")
+def update_task(task_id):
+    """
+    Обрабатывает HTTP PUT /api/tasks/ID
+    Ожидает JSON: { "text": <новый_текст> }
+    Опционально можно дать { "done": <булевое> }
+    """
+    data = request.json or {}
+    task = Task.query.get_or_404(task_id)
+
+    # Если в запросе передали новое поле text — обновляем
+    if "text" in data:
+        task.text = data["text"]
+    # Если хотим (дополнительно) редактировать done
+    if "done" in data:
+        task.done = data["done"]
+
+    db.session.commit()
+    return jsonify(task.as_dict())
+
 if __name__ == "__main__":
     app.run(debug=True)
