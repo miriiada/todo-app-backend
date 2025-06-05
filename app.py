@@ -45,11 +45,16 @@ class Task(db.Model):
     id   = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(120), nullable=False)
     done = db.Column(db.Boolean, default=False)
+        # Добавляем внешнее поле, ссылающееся на пользователя
+    owner_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    # Опционально: связь «каждая задача принадлежит одному пользователю»
+    owner = db.relationship("User", backref=db.backref("tasks", lazy=True))
     def as_dict(self):
         return {
             "id": self.id,
             "text": self.text,
             "done": self.done
+            "owner_id": self.owner_id,
         }
 
 # ─── Регистрация пользователя ────────────────────────────────
