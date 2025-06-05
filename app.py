@@ -104,6 +104,13 @@ def login():
     access_token = create_access_token(identity=user.id)
     return jsonify({ "access_token": access_token, "user": user.as_dict() }), 200
 
+@app.get("/api/auth/me")
+@jwt_required()
+def me():
+    user_id = get_jwt_identity()
+    user = User.query.get_or_404(user_id)
+    return jsonify({"user": user.as_dict()})
+
 
 @app.get("/api/tasks")
 @jwt_required()
